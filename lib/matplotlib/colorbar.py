@@ -313,9 +313,11 @@ class ColorbarBase(cm.ScalarMappable):
         if format is None:
             if isinstance(self.norm, colors.LogNorm):
                 self.formatter = ticker.LogFormatterSciNotation()
+				self.ax.minorticks_off();
             elif isinstance(self.norm, colors.SymLogNorm):
                 self.formatter = ticker.LogFormatterSciNotation(
                                         linthresh=self.norm.linthresh)
+				self.ax.minorticks_off();
             else:
                 self.formatter = ticker.ScalarFormatter()
         elif isinstance(format, six.string_types):
