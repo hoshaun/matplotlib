@@ -2244,11 +2244,17 @@ class FigureCanvasBase(object):
                     pad = rcParams['savefig.pad_inches']
 
                 bbox_inches = bbox_inches.padded(pad)
-
-            restore_bbox = tight_bbox.adjust_bbox(self.figure, bbox_inches,
+            
+            # fix not considering Legend when printing to file
+            from matplotlib.legend import Legend
+            if sum(list(map(isinstance, bbox_artists, [Legend]))) == 0 :
+                restore_bbox = tight_bbox.adjust_bbox(self.figure, bbox_inches,
                                                   canvas.fixed_dpi)
-
-            _bbox_inches_restore = (bbox_inches, restore_bbox)
+                _bbox_inches_restore = (bbox_inches, restore_bbox)
+            else:
+                _bbox_inches_restore = None
+                restore_bbox = None
+                
         else:
             _bbox_inches_restore = None
 
