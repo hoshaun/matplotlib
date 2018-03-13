@@ -183,13 +183,17 @@ class _Backend(object):
         is ``None`` and we are neither in IPython's ``%pylab`` mode, nor in
         `interactive` mode.
         """
-        if cls.mainloop is None:
-            return
         managers = Gcf.get_all_fig_managers()
         if not managers:
             return
         for manager in managers:
-            manager.show()
+            try:
+                manager.show()
+            except NonGuiException:
+                import warnings
+                warnings.warn(
+                    "matplotlib is currently using a non-GUI backend, "
+                    "so cannot show the figure")
         if block is None:
             # Hack: Are we in IPython's pylab mode?
             from matplotlib import pyplot
@@ -204,7 +208,7 @@ class _Backend(object):
             # ipython's `%pylab` mode until proper integration is implemented.
             if get_backend() == "WebAgg":
                 block = True
-        if block:
+        if block and cls.mainloop:
             cls.mainloop()
 
     # This method is the one actually exporting the required methods.
