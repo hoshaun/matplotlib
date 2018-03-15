@@ -299,6 +299,40 @@ def test_colorbar_get_ticks():
     assert defTicks.get_ticks().tolist() == levels
 
 
+@image_comparison(baseline_images=['colorbar_lognorm_minor_ticks_visible_True'],
+                  extensions=['png'], remove_text=False)
+def test_colorbar_lognorm_ticks_visible():
+    plt.rcParams['ytick.minor.visible'] = True
+    plt.rcParams['xtick.minor.visible'] = True
+    data = [[0, 5, 10], [5, 10, 100], [10, 100, 1000], [1000, 10000, 100000]]
+    plt.pcolormesh(data, norm=LogNorm())
+    plt.colorbar()
+
+@image_comparison(baseline_images=['colorbar_lognorm_minor_ticks_visible_False'],
+                  extensions=['png'], remove_text=False)
+def test_colorbar_lognorm_ticks():
+    data = [[0, 5, 10], [5, 10, 100], [10, 100, 1000], [1000, 10000, 100000]]
+    plt.pcolormesh(data, norm=LogNorm())
+    plt.colorbar()
+
+
+@image_comparison(baseline_images=['colorbar_minor_ticks_visible_True'],
+                  extensions=['png'], remove_text=False)
+def test_colorbar_default_ticks_visible():
+    plt.rcParams['ytick.minor.visible'] = True
+    plt.rcParams['xtick.minor.visible'] = True
+    data = [[0, 5, 10], [5, 10, 100], [10, 100, 1000], [1000, 10000, 100000]]
+    plt.pcolormesh(data)
+    plt.colorbar()
+
+
+@image_comparison(baseline_images=['colorbar_minor_ticks_visible_False'],
+                  extensions=['png'], remove_text=False)
+def test_colorbar_ticks_default_ticks():
+    data = [[0, 5, 10], [5, 10, 100], [10, 100, 1000], [1000, 10000, 100000]]
+    plt.pcolormesh(data)
+    plt.colorbar()
+
 def test_colorbar_lognorm_extension():
     # Test that colorbar with lognorm is extended correctly
     f, ax = plt.subplots()
