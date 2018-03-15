@@ -378,6 +378,7 @@ class _ImageBase(martist.Artist, cm.ScalarMappable):
                     a_min, a_max = np.int32(0), np.int32(1)
                 if inp_dtype.kind == 'f':
                     scaled_dtype = A.dtype
+                # fix crashing issue with float128 (#10342)
                 if inp_dtype.kind == 'c':
                     scaled_dtype = np.float64
                 else:
