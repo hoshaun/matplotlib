@@ -56,6 +56,7 @@ from matplotlib import (
 from matplotlib._pylab_helpers import Gcf
 from matplotlib.transforms import Bbox, TransformedBbox, Affine2D
 from matplotlib.path import Path
+from matplotlib.legend import Legend 
 
 try:
     from PIL import Image
@@ -2245,10 +2246,15 @@ class FigureCanvasBase(object):
 
                 bbox_inches = bbox_inches.padded(pad)
 
-            restore_bbox = tight_bbox.adjust_bbox(self.figure, bbox_inches,
-                                                  canvas.fixed_dpi)
+            # fix not considering Legend when printing to file
+            if sum(list(map(isinstance, bbox_artists, [Legend]))) == 0 : 
+                restore_bbox = tight_bbox.adjust_bbox(self.figure, bbox_inches, 
+                                                      canvas.fixed_dpi) 
+                _bbox_inches_restore = (bbox_inches, restore_bbox) 
+            else: 
+                _bbox_inches_restore = None
+                restore_bbox = None 
 
-            _bbox_inches_restore = (bbox_inches, restore_bbox)
         else:
             _bbox_inches_restore = None
 
