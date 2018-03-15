@@ -378,6 +378,8 @@ class _ImageBase(martist.Artist, cm.ScalarMappable):
                     a_min, a_max = np.int32(0), np.int32(1)
                 if inp_dtype.kind == 'f':
                     scaled_dtype = A.dtype
+                if inp_dtype.kind == 'c':
+                    scaled_dtype = np.float64
                 else:
                     # probably an integer of some type.
                     da = a_max.astype(np.float64) - a_min.astype(np.float64)
