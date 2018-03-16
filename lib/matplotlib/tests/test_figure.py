@@ -13,6 +13,8 @@ import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import numpy as np
 import pytest
+import unittest
+
 
 
 @image_comparison(baseline_images=['figure_align_labels'])
@@ -382,3 +384,59 @@ def test_figure_repr():
 def test_fspath(fmt):
     from pathlib import Path
     plt.savefig(Path(os.devnull), format=fmt)
+
+
+class TestSaveFig(unittest.TestCase):
+    # ----------MAKE A FILE WITH TIGHT BBOX_INCHES
+    x = np.arange(-5, 5, 0.1)
+    y = np.cos(x)
+    fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
+
+    ax1.plot(x, y, label='sin')
+    handles, labels = ax1.get_legend_handles_labels()
+
+    legend = ax1.legend(handles, labels, loc='lower left', ncol=2, frameon=False,
+                        bbox_to_anchor=(0.12, 0.88))
+    plt.savefig('AxLegend.png', bbox_extra_artists=[legend, ], bbox_inches='tight')
+
+    # ----------MAKE A FILE WITH NOT TIGHT BBOX_INCHES
+    x1 = np.arange(-5, 5, 0.1)
+    y1 = np.cos(x)
+    fig1, (ax3, ax4) = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
+
+    ax3.plot(x1, y1, label='sin')
+    handles1, labels1 = ax3.get_legend_handles_labels()
+
+    legend1 = ax3.legend(handles1, labels1, loc='lower left', ncol=2, frameon=False,
+                         bbox_to_anchor=(0.12, 0.88))
+    # CHANGE THE BBOX_INCHES FROM TIGHT
+    plt.savefig('AxLegendNotTight.png', bbox_extra_artists=[legend1, ], bbox_inches='tight')
+
+    @image_comparison(baseline_image=['AxLegend'],
+                      extensions=['png'])
+    def FigLegendTight(self):
+        x = np.arange(-5, 5, 0.1)
+        y = np.cos(x)
+        fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
+
+        ax1.plot(x, y, label='sin')
+        handles, labels = ax1.get_legend_handles_labels()
+
+        legend = fig.legend(handles, labels, loc='lower left', ncol=2, frameon=False,
+                            bbox_to_anchor=(0.12, 0.88))
+        plt.savefig('FigLegend.png', bbox_extra_artists=[legend, ], bbox_inches='tight')
+
+    @image_comparison(baseline_images=['AxLegendNotTight'],
+                      extensions=['png'])
+    def FigLegendNotTight(self):
+        x = np.arange(-5, 5, 0.1)
+        y = np.cos(x)
+        fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
+
+        ax1.plot(x, y, label='sin')
+        handles, labels = ax1.get_legend_handles_labels()
+
+        legend = fig.legend(handles, labels, loc='lower left', ncol=2, frameon=False,
+                            bbox_to_anchor=(0.12, 0.88))
+        # CHANGE THE BBOX_INCHES to tight
+        plt.savefig('FigLegendNotTight.png', bbox_extra_artists=[legend, ], bbox_inches='tight')
