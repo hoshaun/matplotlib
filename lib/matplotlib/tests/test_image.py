@@ -876,11 +876,16 @@ def test_empty_imshow(make_norm):
     with pytest.raises(RuntimeError):
         im.make_image(fig._cachedRenderer)
 
-@image_comparison(baseline_images=['imshow_longdouble'])
 def test_imshow_float128():
     fig, ax = plt.subplots()
     ax.imshow(np.zeros((3, 3), dtype=np.longdouble))
-    plt.show()
+
+@image_comparison(baseline_images=['imshow_longdouble'],
+                  remove_text=True, extensions=['png'])
+def test_imshow_longdouble():
+    fig, ax = plt.subplots()
+    ax.imshow(np.zeros((3, 3), dtype=np.longdouble))
+    plt.show()    
 
 def test_imshow_bool():
     fig, ax = plt.subplots()
