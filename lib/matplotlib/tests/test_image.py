@@ -885,7 +885,7 @@ def test_imshow_float128():
 def test_imshow_longdouble():
     fig, ax = plt.subplots()
     ax.imshow(np.zeros((3, 3), dtype=np.longdouble))
-    plt.show()    
+    fig.canvas.draw()
 
 def test_imshow_bool():
     fig, ax = plt.subplots()
