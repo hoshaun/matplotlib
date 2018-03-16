@@ -387,60 +387,34 @@ def test_fspath(fmt):
     plt.savefig(Path(os.devnull), format=fmt)
 
 
-
-x = np.arange(-5, 5, 0.1)
-y = np.cos(x)
-fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
-
-ax1.plot(x, y, label='sin')
-handles, labels = ax1.get_legend_handles_labels()
-
-legend = ax1.legend(handles, labels, loc='lower left', ncol=2,
-                    frameon=False, bbox_to_anchor=(0.12, 0.88))
-plt.savefig('ax_legend.png', bbox_extra_artists=[legend, ],
-            bbox_inches='tight')
-
-# ----------MAKE A FILE WITH NOT TIGHT BBOX_INCHES
-x1 = np.arange(-5, 5, 0.1)
-y1 = np.cos(x)
-fig1, (ax3, ax4) = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
-
-ax3.plot(x1, y1, label='sin')
-handles1, labels1 = ax3.get_legend_handles_labels()
-
-legend1 = ax3.legend(handles1, labels1, loc='lower left', ncol=2,
-                    frameon=False, bbox_to_anchor=(0.12, 0.88))
-plt.savefig('ax_legend_not_tight.png', bbox_extra_artists=[legend1, ],
-            bbox_inches='tight')
-
-
 @image_comparison(baseline_image=['ax_legend'],
                   extensions=['png'])
 def test_fig_tight_legend(self):
-        x = np.arange(-5, 5, 0.1)
-        y = np.cos(x)
-        fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
+    x = np.arange(-5, 5, 0.1)
+    y = np.cos(x)
+    fig, ax = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
 
-        ax1.plot(x, y, label='sin')
-        handles, labels = ax1.get_legend_handles_labels()
+    ax.plot(x, y, label='sin')
+    handles, labels = ax.get_legend_handles_labels()
 
-        legend = fig.legend(handles, labels, loc='lower left', ncol=2,
-                            frameon=False, bbox_to_anchor=(0.12, 0.88))
-        plt.savefig('fig_legend.png', bbox_extra_artists=[legend, ],
-                    bbox_inches='tight')
+    legend = fig.legend(handles, labels, loc='lower left', ncol=2,
+                        frameon=False, bbox_to_anchor=(0.12, 0.88))
+    plt.savefig('fig_legend.png', bbox_extra_artists=[legend, ],
+                bbox_inches='tight')
 
 
 @image_comparison(baseline_images=['ax_legend_not_tight'],
                   extensions=['png'])
-def test_fig_legend_none(self):
-        x = np.arange(-5, 5, 0.1)
-        y = np.cos(x)
-        fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
+def test_fig_legend_not_tight(self):
+    x = np.arange(-5, 5, 0.1)
+    y = np.cos(x)
+    fig, ax = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
 
-        ax1.plot(x, y, label='sin')
-        handles, labels = ax1.get_legend_handles_labels()
+    ax.plot(x, y, label='sin')
+    handles, labels = ax.get_legend_handles_labels()
 
-        legend = fig.legend(handles, labels, loc='lower left', ncol=2,
-                            frameon=False, bbox_to_anchor=(0.12, 0.88))
-        plt.savefig('fig_legend_not_tight.png', bbox_extra_artists=[legend, ],
-                    bbox_inches=None)
+    legend = fig.legend(handles, labels, loc='lower left', ncol=2,
+                        frameon=False, bbox_to_anchor=(0.12, 0.88))
+    plt.savefig('fig_legend_not_tight.png', bbox_extra_artists=[legend, ],
+                bbox_inches=None)
+
