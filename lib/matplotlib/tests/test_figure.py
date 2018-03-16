@@ -387,34 +387,52 @@ def test_fspath(fmt):
     plt.savefig(Path(os.devnull), format=fmt)
 
 
-@image_comparison(baseline_image=['ax_legend'],
+@image_comparison(baseline_images=['fig_legend_tight'],
                   extensions=['png'])
-def test_fig_tight_legend(self):
+def test_fig_tight_legend():
     x = np.arange(-5, 5, 0.1)
-    y = np.cos(x)
-    fig, ax = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
-
-    ax.plot(x, y, label='sin')
-    handles, labels = ax.get_legend_handles_labels()
+    y1 = np.sin(x)
+    y2 = np.cos(x)
+    
+    y3 = np.sin(2*x)
+    y4 = np.cos(2*x)
+    
+    fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
+    
+    ax1.plot(x, y1, label='sin')
+    ax1.plot(x, y2, label='cos')
+    
+    ax2.plot(x, y3, label='sin')
+    ax2.plot(x, y4, label='cos')
+    
+    handles, labels = ax1.get_legend_handles_labels()
 
     legend = fig.legend(handles, labels, loc='lower left', ncol=2,
                         frameon=False, bbox_to_anchor=(0.12, 0.88))
-    plt.savefig('fig_legend.png', bbox_extra_artists=[legend, ],
+    plt.savefig('fig_legend_tight.png', bbox_extra_artists=[legend, ],
                 bbox_inches='tight')
 
-
-@image_comparison(baseline_images=['ax_legend_not_tight'],
+@image_comparison(baseline_images=['fig_legend_not_tight'],
                   extensions=['png'])
-def test_fig_legend_not_tight(self):
+def test_fig_legend_not_tight():
     x = np.arange(-5, 5, 0.1)
-    y = np.cos(x)
-    fig, ax = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
+    y1 = np.sin(x)
+    y2 = np.cos(x)
+    
+    y3 = np.sin(2*x)
+    y4 = np.cos(2*x)
+    
+    fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(10, 6))
+    
+    ax1.plot(x, y1, label='sin')
+    ax1.plot(x, y2, label='cos')
+    
+    ax2.plot(x, y3, label='sin')
+    ax2.plot(x, y4, label='cos')
 
-    ax.plot(x, y, label='sin')
-    handles, labels = ax.get_legend_handles_labels()
+    handles, labels = ax1.get_legend_handles_labels()
 
     legend = fig.legend(handles, labels, loc='lower left', ncol=2,
                         frameon=False, bbox_to_anchor=(0.12, 0.88))
     plt.savefig('fig_legend_not_tight.png', bbox_extra_artists=[legend, ],
                 bbox_inches=None)
-
