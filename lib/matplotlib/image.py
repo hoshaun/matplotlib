@@ -379,7 +379,7 @@ class _ImageBase(martist.Artist, cm.ScalarMappable):
                 if inp_dtype.kind == 'f':
                     scaled_dtype = A.dtype
                 # fix crashing issue with float128 (#10342)
-                if inp_dtype.kind == 'c':
+                if inp_dtype.kind == 'longdouble':
                     scaled_dtype = np.float64
                 else:
                     # probably an integer of some type.
