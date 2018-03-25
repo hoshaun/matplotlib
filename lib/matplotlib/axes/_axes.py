@@ -6205,7 +6205,7 @@ class Axes(_AxesBase):
     def hist(self, x, bins=None, range=None, density=None, weights=None,
              cumulative=False, bottom=None, histtype='bar', align='mid',
              orientation='vertical', rwidth=None, log=False,
-             color=None, label=None, stacked=False, normed=None,
+             color=None, label=None, stacked=False, normed=None, generated=False,
              **kwargs):
         """
         Plot a histogram.
@@ -6419,6 +6419,8 @@ class Axes(_AxesBase):
         if bins is None:
             bins = rcParams['hist.bins']
 
+
+
         # Validate string inputs here so we don't have to clutter
         # subsequent code.
         if histtype not in ['bar', 'barstacked', 'step', 'stepfilled']:
@@ -6434,15 +6436,6 @@ class Axes(_AxesBase):
         if histtype == 'barstacked' and not stacked:
             stacked = True
 
-        if density is not None and normed is not None:
-            raise ValueError("kwargs 'density' and 'normed' cannot be used "
-                             "simultaneously. "
-                             "Please only use 'density', since 'normed'"
-                             "is deprecated.")
-        if normed is not None:
-            warnings.warn("The 'normed' kwarg is deprecated, and has been "
-                          "replaced by the 'density' kwarg.")
-
         # basic input validation
         input_empty = np.size(x) == 0
         # Massage 'x' for processing.
@@ -6452,31 +6445,6 @@ class Axes(_AxesBase):
             x = cbook._reshape_2D(x, 'x')
         nx = len(x)  # number of datasets
 
-        # Process unit information
-        # Unit conversion is done individually on each dataset
-        self._process_unit_info(xdata=x[0], kwargs=kwargs)
-        x = [self.convert_xunits(xi) for xi in x]
-
-        if bin_range is not None:
-            bin_range = self.convert_xunits(bin_range)
-
-        # Check whether bins or range are given explicitly.
-        binsgiven = (cbook.iterable(bins) or bin_range is not None)
-
-        # We need to do to 'weights' what was done to 'x'
-        if weights is not None:
-            w = cbook._reshape_2D(weights, 'weights')
-        else:
-            w = [None] * nx
-
-        if len(w) != nx:
-            raise ValueError('weights should have the same shape as x')
-
-        for xi, wi in zip(x, w):
-            if wi is not None and len(wi) != len(xi):
-                raise ValueError(
-                    'weights should have the same shape as x')
-
         if color is None:
             color = [self._get_lines.get_next_color() for i in xrange(nx)]
         else:
@@ -6484,54 +6452,95 @@ class Axes(_AxesBase):
             if len(color) != nx:
                 raise ValueError("color kwarg must have one color per dataset")
 
-        # If bins are not specified either explicitly or via range,
-        # we need to figure out the range required for all datasets,
-        # and supply that to np.histogram.
-        if not binsgiven and not input_empty:
-            xmin = np.inf
-            xmax = -np.inf
-            for xi in x:
-                if len(xi) > 0:
-                    xmin = min(xmin, xi.min())
-                    xmax = max(xmax, xi.max())
-            bin_range = (xmin, xmax)
-        density = bool(density) or bool(normed)
-        if density and not stacked:
-            hist_kwargs = dict(range=bin_range, density=density)
-        else:
-            hist_kwargs = dict(range=bin_range)
+        if not generated:
+            if density is not None and normed is not None:
+                raise ValueError("kwargs 'density' and 'normed' cannot be used "
+                                 "simultaneously. "
+                                 "Please only use 'density', since 'normed'"
+                                 "is deprecated.")
+            if normed is not None:
+                warnings.warn("The 'normed' kwarg is deprecated, and has been "
+                              "replaced by the 'density' kwarg.")
 
-        # List to store all the top coordinates of the histograms
-        tops = []
-        mlast = None
-        # Loop through datasets
-        for i in xrange(nx):
-            # this will automatically overwrite bins,
-            # so that each histogram uses the same bins
-            m, bins = np.histogram(x[i], bins, weights=w[i], **hist_kwargs)
-            m = m.astype(float)  # causes problems later if it's an int
-            if mlast is None:
-                mlast = np.zeros(len(bins)-1, m.dtype)
-            if stacked:
-                m += mlast
-                mlast[:] = m
-            tops.append(m)
 
-        # If a stacked density plot, normalize so the area of all the stacked
-        # histograms together is 1
-        if stacked and density:
-            db = np.diff(bins)
-            for m in tops:
-                m[:] = (m / db) / tops[-1].sum()
-        if cumulative:
-            slc = slice(None)
-            if cbook.is_numlike(cumulative) and cumulative < 0:
-                slc = slice(None, None, -1)
 
-            if density:
-                tops = [(m * np.diff(bins))[slc].cumsum()[slc] for m in tops]
+            # Process unit information
+            # Unit conversion is done individually on each dataset
+            self._process_unit_info(xdata=x[0], kwargs=kwargs)
+            x = [self.convert_xunits(xi) for xi in x]
+
+            if bin_range is not None:
+                bin_range = self.convert_xunits(bin_range)
+
+            # Check whether bins or range are given explicitly.
+            binsgiven = (cbook.iterable(bins) or bin_range is not None)
+
+            # We need to do to 'weights' what was done to 'x'
+            if weights is not None:
+                w = cbook._reshape_2D(weights, 'weights')
             else:
-                tops = [m[slc].cumsum()[slc] for m in tops]
+                w = [None] * nx
+
+            if len(w) != nx:
+                raise ValueError('weights should have the same shape as x')
+
+            for xi, wi in zip(x, w):
+                if wi is not None and len(wi) != len(xi):
+                    raise ValueError(
+                        'weights should have the same shape as x')
+
+
+            # If bins are not specified either explicitly or via range,
+            # we need to figure out the range required for all datasets,
+            # and supply that to np.histogram.
+            if not binsgiven and not input_empty:
+                xmin = np.inf
+                xmax = -np.inf
+                for xi in x:
+                    if len(xi) > 0:
+                        xmin = min(xmin, xi.min())
+                        xmax = max(xmax, xi.max())
+                bin_range = (xmin, xmax)
+            density = bool(density) or bool(normed)
+            if density and not stacked:
+                hist_kwargs = dict(range=bin_range, density=density)
+            else:
+                hist_kwargs = dict(range=bin_range)
+
+            # List to store all the top coordinates of the histograms
+            tops = []
+            mlast = None
+            # Loop through datasets
+            for i in xrange(nx):
+                # this will automatically overwrite bins,
+                # so that each histogram uses the same bins
+                m, bins = np.histogram(x[i], bins, weights=w[i], **hist_kwargs)
+                m = m.astype(float)  # causes problems later if it's an int
+                if mlast is None:
+                    mlast = np.zeros(len(bins)-1, m.dtype)
+                if stacked:
+                    m += mlast
+                    mlast[:] = m
+                tops.append(m)
+
+            # If a stacked density plot, normalize so the area of all the stacked
+            # histograms together is 1
+            if stacked and density:
+                db = np.diff(bins)
+                for m in tops:
+                    m[:] = (m / db) / tops[-1].sum()
+            if cumulative:
+                slc = slice(None)
+                if cbook.is_numlike(cumulative) and cumulative < 0:
+                    slc = slice(None, None, -1)
+
+                if density:
+                    tops = [(m * np.diff(bins))[slc].cumsum()[slc] for m in tops]
+                else:
+                    tops = [m[slc].cumsum()[slc] for m in tops]
+
+        else:
+            tops = x
 
         patches = []
 
