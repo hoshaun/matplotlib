@@ -2734,7 +2734,7 @@ class Axes(_AxesBase):
             autopct=None, pctdistance=0.6, shadow=False, labeldistance=1.1,
             startangle=None, radius=None, counterclock=True,
             wedgeprops=None, textprops=None, center=(0, 0),
-            frame=False, rotatelabels=False):
+            frame=False, rotatelabels=False, aspect='equal'):
         """
         Plot a pie chart.
 
@@ -2809,6 +2809,17 @@ class Axes(_AxesBase):
         rotatelabels : bool, optional, default: False
             Rotate each label to the angle of the corresponding slice if true.
 
+        aspect : ['auto' | 'equal' | scalar], optional, default: "equal"
+
+            If 'equal', and `extent` is None, changes the axes aspect ratio to
+            match that of the image. If `extent` is not `None`, the axes
+            aspect ratio is changed to match that of the extent.
+
+            If 'auto', changes the image aspect ratio to match that of the
+            axes.
+
+            If None, default to rc ``image.aspect`` value.
+
         Returns
         -------
         patches : list
@@ -2829,6 +2840,10 @@ class Axes(_AxesBase):
 
 
         """
+
+        if aspect is None:
+            aspect = rcParams['image.aspect']
+        self.set_aspect(aspect)
 
         x = np.array(x, np.float32)
 
