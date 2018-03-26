@@ -4523,6 +4523,10 @@ def test_text_labelsize():
     ax.tick_params(labelsize='large')
     ax.tick_params(direction='out')
 
+@image_comparison(baseline_images=['circular_pie'],
+                  extensions=['png'])
+def test_pie_default_circular_shape():
+    plt.pie([60, 30, 10])
 
 @image_comparison(baseline_images=['pie_linewidth_0', 'pie_linewidth_0',
                                    'pie_linewidth_0'],
