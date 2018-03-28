@@ -7,13 +7,11 @@ from __future__ import (absolute_import, division, print_function,
 
 import six
 
-import math
 import copy
 
-from matplotlib import lines as mlines, axis as maxis, patches as mpatches
-from matplotlib import rcParams
-from . import art3d
-from . import proj3d
+from matplotlib import (
+    artist, lines as mlines, axis as maxis, patches as mpatches, rcParams)
+from . import art3d, proj3d
 
 import numpy as np
 
@@ -222,6 +220,7 @@ class Axis(maxis.XAxis):
 
         renderer.close_group('pane3d')
 
+    @artist.allow_rasterization
     def draw(self, renderer):
         self.label._transform = self.axes.transData
         renderer.open_group('axis3d')
@@ -288,7 +287,7 @@ class Axis(maxis.XAxis):
         ax_scale = self.axes.bbox.size / self.figure.bbox.size
         ax_inches = np.multiply(ax_scale, self.figure.get_size_inches())
         ax_points_estimate = sum(72. * ax_inches)
-        deltas_per_point = 48. / ax_points_estimate
+        deltas_per_point = 48 / ax_points_estimate
         default_offset = 21.
         labeldeltas = (
             (self.labelpad + default_offset) * deltas_per_point * deltas)
@@ -299,21 +298,20 @@ class Axis(maxis.XAxis):
                                               renderer.M)
         self.label.set_position((tlx, tly))
         if self.get_rotate_label(self.label.get_text()):
-            angle = art3d.norm_text_angle(math.degrees(math.atan2(dy, dx)))
+            angle = art3d.norm_text_angle(np.rad2deg(np.arctan2(dy, dx)))
             self.label.set_rotation(angle)
         self.label.set_va(info['label']['va'])
         self.label.set_ha(info['label']['ha'])
         self.label.draw(renderer)
 
-
         # Draw Offset text
 
         # Which of the two edge points do we want to
         # use for locating the offset text?
-        if juggled[2] == 2 :
+        if juggled[2] == 2:
             outeredgep = edgep1
             outerindex = 0
-        else :
+        else:
             outeredgep = edgep2
             outerindex = 1
 
@@ -321,9 +319,9 @@ class Axis(maxis.XAxis):
         pos = move_from_center(pos, centers, labeldeltas, axmask)
         olx, oly, olz = proj3d.proj_transform(
             pos[0], pos[1], pos[2], renderer.M)
-        self.offsetText.set_text( self.major.formatter.get_offset() )
-        self.offsetText.set_position( (olx, oly) )
-        angle = art3d.norm_text_angle(math.degrees(math.atan2(dy, dx)))
+        self.offsetText.set_text(self.major.formatter.get_offset())
+        self.offsetText.set_position((olx, oly))
+        angle = art3d.norm_text_angle(np.rad2deg(np.arctan2(dy, dx)))
         self.offsetText.set_rotation(angle)
         # Must set rotation mode to "anchor" so that
         # the alignment point is used as the "fulcrum" for rotation.
@@ -344,29 +342,29 @@ class Axis(maxis.XAxis):
         # Three-letters (e.g., TFT, FTT) are short-hand for the array of bools
         # from the variable 'highs'.
         # ---------------------------------------------------------------------
-        if centpt[info['tickdir']] > peparray[info['tickdir'], outerindex] :
+        if centpt[info['tickdir']] > peparray[info['tickdir'], outerindex]:
             # if FT and if highs has an even number of Trues
             if (centpt[index] <= peparray[index, outerindex]
-                and ((len(highs.nonzero()[0]) % 2) == 0)) :
+                    and len(highs.nonzero()[0]) % 2 == 0):
                 # Usually, this means align right, except for the FTT case,
                 # in which offset for axis 1 and 2 are aligned left.
-                if highs.tolist() == [False, True, True] and index in (1, 2) :
+                if highs.tolist() == [False, True, True] and index in (1, 2):
                     align = 'left'
-                else :
+                else:
                     align = 'right'
-            else :
+            else:
                 # The FF case
                 align = 'left'
-        else :
+        else:
             # if TF and if highs has an even number of Trues
             if (centpt[index] > peparray[index, outerindex]
-                and ((len(highs.nonzero()[0]) % 2) == 0)) :
+                    and len(highs.nonzero()[0]) % 2 == 0):
                 # Usually mean align left, except if it is axis 2
-                if index == 2 :
+                if index == 2:
                     align = 'right'
-                else :
+                else:
                     align = 'left'
-            else :
+            else:
                 # The TT case
                 align = 'right'
 
@@ -385,7 +383,7 @@ class Axis(maxis.XAxis):
 
             # Grid points at end of the other plane
             xyz2 = copy.deepcopy(xyz0)
-            newindex = (index + 2) %  3
+            newindex = (index + 2) % 3
             newval = get_flip_min_max(xyz2[0], newindex, mins, maxs)
             for i in range(len(majorLocs)):
                 xyz2[i][newindex] = newval
@@ -447,6 +445,7 @@ class Axis(maxis.XAxis):
 
         renderer.close_group('axis3d')
         self.stale = False
+        
 
     def get_view_interval(self):
         """return the Interval instance for this 3d axis view limits"""
@@ -461,7 +460,7 @@ class Axis(maxis.XAxis):
 
     # TODO: Get this to work properly when mplot3d supports
     #       the transforms framework.
-    def get_tightbbox(self, renderer) :
+    def get_tightbbox(self, renderer):
         # Currently returns None so that Axis.get_tightbbox
         # doesn't return junk info.
         return None
@@ -469,16 +468,152 @@ class Axis(maxis.XAxis):
 # Use classes to look at different data limits
 
 class XAxis(Axis):
+    #_valid_sides = ['auto', 'lower_front', 'upper_front', 'lower_back', 'upper_back']
+    _planes = {
+        'auto': None,
+        'lower_front': (4, 5, 2, 3, 0, 1),
+        'upper_front': (0, 1, 2, 3, 5, 4),
+        'lower_back': (2, 3, 4, 5, 0, 1),
+        'upper_back': (1, 0, 3, 2, 5, 4)
+    }
+    
+    def __init__(self, *args, **kwargs):
+        Axis.__init__(self, *args, **kwargs)
+        self._draw_side = 'auto'
+        self._draw_planes = []
+    
+    def set_draw_side(self, side):
+        """self, str->None
+
+        Set which side on the graph should MPL draw this Axis.
+        """
+        if isinstance(side, str):
+            if side not in self._planes.keys():  # catch not string or not valid
+                raise ValueError(
+                        'XAxis in 3D plot only supports the following sides: {sides}'.format(
+                                sides = ', '.join(self._valid_sides)))
+
+            self._draw_planes.append(self._planes[side])
+            
+            return
+
+        try:
+            _ = iter(side)
+        except TypeError:
+                raise ValueError('Iterable or String expected!')
+        
+        for pos in side:
+            if pos not in self._planes.keys():
+                raise ValueError(
+                        'All places in XAxis in 3D plot must within the following sides: {sides}'.format(
+                                sides = ', '.join(self._valid_sides)))
+            self._draw_planes.append(self._planes[pos])
+    
+    def get_draw_planes(self):
+        """get the planes to draw on"""
+        return self._draw_planes
+    
     def get_data_interval(self):
-        'return the Interval instance for this axis data limits'
+        """return the Interval instance for this axis data limits"""
         return self.axes.xy_dataLim.intervalx
 
+
 class YAxis(Axis):
+    _valid_sides = ['auto', 'lower_left', 'lower_right', 'upper_left', 'upper_right']
+    _planes = {
+        'auto': None,
+        'lower_left': (5, 4, 2, 3, 0, 1),
+        'lower_right': (0, 1, 3, 2, 4, 5),
+        'upper_left': (1, 0, 2, 3, 5, 4),
+        'upper_right': (0, 1, 2, 3, 5, 4)
+    }
+    
+    def __init__(self, *args, **kwargs):
+        Axis.__init__(self, *args, **kwargs)
+        self._draw_side = 'auto'
+        self._draw_planes = []
+
+    def set_draw_side(self, side):
+        """self, str->None
+
+        Set which side on the graph should MPL draw this Axis.
+        """
+        if isinstance(side, str):
+            if side not in self._planes.keys():  # catch not string or not valid
+                raise ValueError(
+                        'YAxis in 3D plot only supports the following sides: {sides}'.format(
+                                sides = ', '.join(self._valid_sides)))
+        
+            self._draw_planes.append(self._planes[side])
+        
+            return
+    
+        try:
+            _ = iter(side)
+        except TypeError:
+            raise ValueError('Iterable or String expected!')
+    
+        for pos in side:
+            if pos not in self._planes.keys():
+                raise ValueError(
+                        'All places in YAxis in 3D plot must within the following sides: {sides}'.format(
+                                sides = ', '.join(self._valid_sides)))
+            self._draw_planes.append(self._planes[pos])
+    
+    def get_draw_planes(self):
+        """get the planes to draw on"""
+        return self._draw_planes
+    
     def get_data_interval(self):
-        'return the Interval instance for this axis data limits'
+        """return the Interval instance for this axis data limits"""
         return self.axes.xy_dataLim.intervaly
 
+
 class ZAxis(Axis):
+    _valid_sides = ['auto', 'left', 'right', 'front', 'back']
+    _planes = {'auto': None,
+               'left': (2, 3, 0, 1, 4, 5),
+               'right': (3, 2, 1, 0, 4, 5),
+               'front': (3, 2, 0, 1, 4, 5),
+               'back': (2, 3, 0, 1, 4, 5)
+    }
+
+    def __init__(self, *args, **kwargs):
+        Axis.__init__(self, *args, **kwargs)
+        self._draw_side = 'auto'
+        self._draw_planes = []
+
+    def set_draw_side(self, side):
+        """self, str->None
+
+        Set which side on the graph should MPL draw this Axis.
+        """
+        if isinstance(side, str):
+            if side not in self._planes.keys():  # catch not string or not valid
+                raise ValueError(
+                        'ZAxis in 3D plot only supports the following sides: {sides}'.format(
+                                sides = ', '.join(self._valid_sides)))
+        
+            self._draw_planes.append(self._planes[side])
+        
+            return
+    
+        try:
+            _ = iter(side)
+        except TypeError:
+            raise ValueError('Iterable or String expected!')
+    
+        for pos in side:
+            if pos not in self._planes.keys():
+                raise ValueError(
+                        'All places in ZAxis in 3D plot must within the following sides: {sides}'.format(
+                                sides = ', '.join(self._valid_sides)))
+            self._draw_planes.append(self._planes[pos])
+
+    def get_draw_planes(self):
+        """get the planes to draw on"""
+        return self._draw_planes
+
     def get_data_interval(self):
-        'return the Interval instance for this axis data limits'
+        """return the Interval instance for this axis data limits"""
         return self.axes.zz_dataLim.intervalx
