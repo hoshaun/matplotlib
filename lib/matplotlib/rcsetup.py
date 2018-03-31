@@ -434,6 +434,17 @@ def validate_aspect(s):
         raise ValueError('not a valid aspect specification')
 
 
+def validate_titleposition(s):
+    titlepositions = ['left', 'center', 'right']
+    if isinstance(s, six.string_types):
+        s = s.lower()
+    if s in titlepositions:
+        return s
+    else:
+        raise ValueError("%s is not a valid title position. Valid title positions "
+                         "are %s." % (s, ", ".join(titlepositions)))
+
+
 def validate_fontsize(s):
     fontsizes = ['xx-small', 'x-small', 'small', 'medium', 'large',
                  'x-large', 'xx-large', 'smaller', 'larger']
@@ -1124,6 +1135,7 @@ defaultParams = {
     'axes.spines.bottom':    [True, validate_bool],  # around the chart
     'axes.spines.top':       [True, validate_bool],  # denoting data boundary
 
+    'axes.titleposition':    ['center', validate_titleposition],
     'axes.titlesize':        ['large', validate_fontsize],  # fontsize of the
                                                             # axes title
     'axes.titleweight':      ['normal', validate_string],  # font weight of axes title
