@@ -4672,6 +4672,54 @@ def test_set_get_ticklabels():
     ax[1].set_yticklabels(ax[0].get_yticklabels())
 
 
+@image_comparison(baseline_images=['set_title_loc_default'],
+                  extensions=['png'])
+def test_set_title_loc_default():
+    with matplotlib.rc_context({'axes.titleposition': 'left'}):
+        plt.gca().set_title('test')
+
+
+@image_comparison(baseline_images=['set_title_loc_given'],
+                  extensions=['png'])
+def test_set_title_loc_given():
+    plt.gca().set_title('test', loc="left")
+
+
+def test_set_title_loc_invalid():
+    with pytest.raises(ValueError) as errs:
+        plt.gca().set_title('test', loc="wrong")
+        assert len(errs) == 1
+        assert "'wrong' is not a valid location" == errs[0].message.args[0]
+
+
+def test_rcparam_titleposition_invalid():
+    with pytest.raises(ValueError) as errs:
+        with matplotlib.rc_context({'axes.titleposition': 'wrong'}):
+            plt.gca().set_title('test')
+        assert len(errs) == 1
+        assert "wrong is not a valid title position. Valid title positions "\
+               "are left, center, right." == errs[0].message.args[0]
+
+
+def test_get_title_loc_default():
+    with matplotlib.rc_context({'axes.titleposition': 'right'}):
+        plt.gca().set_title('test')
+        assert plt.gca().get_title() == 'test'
+
+
+def test_get_title_loc_given():
+    plt.gca().set_title('test', loc='center')
+    assert plt.gca().get_title('center') == 'test'
+
+
+def test_get_title_loc_invalid():
+    with pytest.raises(ValueError) as errs:
+        plt.gca().set_title('test', loc='left')
+        plt.gca().get_title('wrong')
+        assert len(errs) == 1
+        assert "'wrong' is not a valid location" == errs[0].message.args[0]
+
+
 def test_tick_label_update():
     # test issue 9397
 
