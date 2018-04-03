@@ -6205,7 +6205,7 @@ class Axes(_AxesBase):
     def hist(self, x, bins=None, range=None, density=None, weights=None,
              cumulative=False, bottom=None, histtype='bar', align='mid',
              orientation='vertical', rwidth=None, log=False,
-             color=None, label=None, stacked=False, normed=None, generated=False,
+             color=None, label=None, stacked=False, normed=None, computed=False,
              **kwargs):
         """
         Plot a histogram.
@@ -6305,6 +6305,17 @@ class Axes(_AxesBase):
             of bottom must match the number of bins.  If None, defaults to 0.
 
             Default is ``None``
+
+        computed : boolean, optional
+            If ``True``, *x* will be treated as the result of computed bins.
+            Instead of generating the bins and displaying the histogram,
+            *x* will be treated as the computed bins and will instead just be
+            displayed. *bins* will need to be provided as a sequence if *computed*
+            is given as ``True``. *range*, *density*, *weights* and *cumulative*
+            are ignored when *computed* is given as ``True``.
+
+            Default is ``False``
+
 
         histtype : {'bar', 'barstacked', 'step',  'stepfilled'}, optional
             The type of histogram to draw.
@@ -6419,8 +6430,6 @@ class Axes(_AxesBase):
         if bins is None:
             bins = rcParams['hist.bins']
 
-
-
         # Validate string inputs here so we don't have to clutter
         # subsequent code.
         if histtype not in ['bar', 'barstacked', 'step', 'stepfilled']:
@@ -6435,6 +6444,16 @@ class Axes(_AxesBase):
 
         if histtype == 'barstacked' and not stacked:
             stacked = True
+
+        if bin_range is not None:
+            bin_range = self.convert_xunits(bin_range)
+
+        # Check whether bins or range are given explicitly.
+        binsgiven = (cbook.iterable(bins) or bin_range is not None)
+
+        if not binsgiven and computed:
+            raise ValueError(
+                "bins must be given a sequence when using 'computed' kwargs")
 
         # basic input validation
         input_empty = np.size(x) == 0
@@ -6452,7 +6471,9 @@ class Axes(_AxesBase):
             if len(color) != nx:
                 raise ValueError("color kwarg must have one color per dataset")
 
-        if not generated:
+        if computed:
+            tops = x
+        else:
             if density is not None and normed is not None:
                 raise ValueError("kwargs 'density' and 'normed' cannot be used "
                                  "simultaneously. "
@@ -6462,18 +6483,12 @@ class Axes(_AxesBase):
                 warnings.warn("The 'normed' kwarg is deprecated, and has been "
                               "replaced by the 'density' kwarg.")
 
-
-
             # Process unit information
             # Unit conversion is done individually on each dataset
             self._process_unit_info(xdata=x[0], kwargs=kwargs)
             x = [self.convert_xunits(xi) for xi in x]
 
-            if bin_range is not None:
-                bin_range = self.convert_xunits(bin_range)
 
-            # Check whether bins or range are given explicitly.
-            binsgiven = (cbook.iterable(bins) or bin_range is not None)
 
             # We need to do to 'weights' what was done to 'x'
             if weights is not None:
@@ -6488,6 +6503,7 @@ class Axes(_AxesBase):
                 if wi is not None and len(wi) != len(xi):
                     raise ValueError(
                         'weights should have the same shape as x')
+
 
 
             # If bins are not specified either explicitly or via range,
@@ -6538,9 +6554,6 @@ class Axes(_AxesBase):
                     tops = [(m * np.diff(bins))[slc].cumsum()[slc] for m in tops]
                 else:
                     tops = [m[slc].cumsum()[slc] for m in tops]
-
-        else:
-            tops = x
 
         patches = []
 
@@ -6720,7 +6733,7 @@ class Axes(_AxesBase):
 
     @_preprocess_data(replace_names=["x", "y", "weights"], label_namer=None)
     def hist2d(self, x, y, bins=10, range=None, normed=False, weights=None,
-               cmin=None, cmax=None, **kwargs):
+               cmin=None, cmax=None, computed=False, **kwargs):
         """
         Make a 2D histogram plot.
 
@@ -6769,6 +6782,16 @@ class Axes(_AxesBase):
              to none before passing to imshow) and these count values in the
              return value count histogram will also be set to nan upon return
 
+        computed : boolean, optional
+            If ``True``, *x* will be treated as the result of computed bins.
+            Instead of generating the bins and displaying the histogram,
+            *x* will be treated as the computed bins and will instead just be
+            displayed. *bins* will need to be provided as a tuple of sequences
+            if *computed* is given as ``True``. *range*, *normed*, *weights*
+            are ignored when *computed* is given as ``True``.
+
+            Default is ``False``
+
         Returns
         -------
         h : 2D array
@@ -6810,9 +6833,17 @@ class Axes(_AxesBase):
         (similar in effect to gamma correction) can be accomplished with
         :class:`colors.PowerNorm`.
         """
-
-        h, xedges, yedges = np.histogram2d(x, y, bins=bins, range=range,
-                                           normed=normed, weights=weights)
+        if computed:
+            h = x
+            if isinstance(bins, tuple):
+                xedges, yedges = bins
+                if np.size(xedges) == 0 or np.size(yedges) == 0:
+                    raise ValueError("bins must have non-zero length")
+            else:
+                raise ValueError("bins must be given a tuple of sequences when using 'computed' kwargs")
+        else:
+            h, xedges, yedges = np.histogram2d(x, y, bins=bins, range=range,
+                                               normed=normed, weights=weights)
 
         if cmin is not None:
             h[h < cmin] = None

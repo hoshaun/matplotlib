@@ -1600,6 +1600,27 @@ def test_hist_datetime_datasets():
     ax.hist(data, stacked=False)
 
 
+@image_comparison(baseline_images=['hist_computed'],
+                  remove_text=True, extensions=['png'])
+def test_hist_computed():
+    np.random.seed(0)
+    bins = np.arange(-10, 10, 0.1)
+    X = abs(np.random.randn(len(bins) - 1))
+    plt.hist(X, bins=bins, computed=True)
+
+
+@image_comparison(baseline_images=['hist2d_computed'],
+                  remove_text=True, extensions=['png'])
+def test_hist2d_computed():
+    np.random.seed(0)
+    bins = (np.arange(-1, 1, 0.1), np.arange(0, 5, 0.25))
+    X = np.random.randn(10000)
+    Y = np.random.randn(10000)
+    data, xedges, yedges = np.histogram2d(X, Y, bins=bins,  range=None,
+                                          normed=None,  weights=None)
+    plt.hist2d(data, bins=bins, computed=True)
+
+
 def contour_dat():
     x = np.linspace(-3, 5, 150)
     y = np.linspace(-3, 5, 120)
