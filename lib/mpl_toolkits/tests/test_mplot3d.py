@@ -1,6 +1,7 @@
 import pytest
 
 from mpl_toolkits.mplot3d import Axes3D, axes3d, proj3d, art3d
+from mpl_toolkits.mplot3d.axes3d import Axes3D, get_test_data
 from matplotlib import cm
 from matplotlib.testing.decorators import image_comparison
 from matplotlib.collections import LineCollection
@@ -586,6 +587,86 @@ def test_axes3d_ortho():
     ax = fig.gca(projection='3d')
     ax.set_proj_type('ortho')
 
+@image_comparison(baseline_images=['axes3d_manual_label'], extensions=['png'])
+def test_axes3d_manual_label():
+    fig = plt.figure()
+    
+    # X
+    ax = fig.add_subplot(3,5,1, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+
+    ax = fig.add_subplot(3,5,2, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.xaxis.set_draw_side('lower_front')
+    
+    ax = fig.add_subplot(3,5,3, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.xaxis.set_draw_side('upper_front')
+
+    ax = fig.add_subplot(3,5,4, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.xaxis.set_draw_side('lower_back')
+
+    ax = fig.add_subplot(3,5,5, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.xaxis.set_draw_side('upper_back')
+    
+    # Y
+    ax = fig.add_subplot(3,5,6, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+
+    ax = fig.add_subplot(3,5,7, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.yaxis.set_draw_side('lower_left')
+
+    ax = fig.add_subplot(3,5,8, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.yaxis.set_draw_side('lower_right')
+
+    ax = fig.add_subplot(3,5,9, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.yaxis.set_draw_side('upper_left')
+
+    ax = fig.add_subplot(3,5,10, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.yaxis.set_draw_side('upper_right')
+
+    # Z
+    ax = fig.add_subplot(3, 5, 11, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+
+    ax = fig.add_subplot(3, 5, 12, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.zaxis.set_draw_side('left')
+
+    ax = fig.add_subplot(3, 5, 13, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.zaxis.set_draw_side('right')
+
+    ax = fig.add_subplot(3, 5, 14, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.zaxis.set_draw_side('front')
+
+    ax = fig.add_subplot(3, 5, 15, projection = '3d')
+    X, Y, Z = get_test_data(0.05)
+    ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
+    ax.zaxis.set_draw_side('back')
+
+    plt.show()
 
 @pytest.mark.parametrize('value', [np.inf, np.nan])
 @pytest.mark.parametrize(('setter', 'side'), [
@@ -772,3 +853,4 @@ def test_inverted_cla():
     assert not ax.xaxis_inverted()
     assert not ax.yaxis_inverted()
     assert not ax.zaxis_inverted()
+
