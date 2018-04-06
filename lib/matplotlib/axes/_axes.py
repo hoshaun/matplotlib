@@ -6732,7 +6732,7 @@ class Axes(_AxesBase):
             return tops, bins, cbook.silent_list('Lists of Patches', patches)
 
     @_preprocess_data(replace_names=["x", "y", "weights"], label_namer=None)
-    def hist2d(self, x, y, bins=10, range=None, normed=False, weights=None,
+    def hist2d(self, x, y=None, bins=10, range=None, normed=False, weights=None,
                cmin=None, cmax=None, computed=False, **kwargs):
         """
         Make a 2D histogram plot.
