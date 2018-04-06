@@ -666,8 +666,6 @@ def test_axes3d_manual_label():
     ax.plot_wireframe(X, Y, Z, rstride = 10, cstride = 10)
     ax.zaxis.set_draw_side('back')
 
-    plt.show()
-
 @pytest.mark.parametrize('value', [np.inf, np.nan])
 @pytest.mark.parametrize(('setter', 'side'), [
     ('set_xlim3d', 'left'),
